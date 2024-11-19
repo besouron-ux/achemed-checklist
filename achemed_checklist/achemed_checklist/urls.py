@@ -30,6 +30,8 @@ urlpatterns = [
     path('', home),  # Página inicial
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),  # Rotas da API
+    path('', include('checklist.urls')),  # Substitua 'nome_do_app' pelo nome do seu app
 ]
+
 
 

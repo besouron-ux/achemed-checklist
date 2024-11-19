@@ -27,32 +27,34 @@ const ChecklistForm = ({ checklistId, onReturnHome }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Determinar status do checklist
+    
         const allChecked = Object.keys(formData).every(
             (key) =>
                 key === 'cliente' ||
                 key === 'consultorio' ||
                 (typeof formData[key] === 'boolean' && formData[key])
         );
-
+    
         const status = allChecked ? 'APTO' : 'NÃO APTO';
-
+    
         try {
             const response = await axios.post('http://localhost:8000/api/checklists/', {
                 ...formData,
                 status,
             });
-
             alert('Checklist submetido com sucesso!');
-            console.log(response.data);
-
+            console.log('Resposta do servidor:', response.data);
             onReturnHome();
         } catch (error) {
             console.error('Erro ao submeter o checklist:', error);
-            alert('Ocorreu um erro ao submeter o checklist.');
+            if (error.response) {
+                console.error('Erro do backend:', error.response.data);
+                alert(`Erro ao submeter: ${JSON.stringify(error.response.data)}`);
+            } else {
+                alert('Erro ao submeter. Verifique a conexão com o backend.');
+            }
         }
-    };
+    };    
 
     return (
         <form onSubmit={handleSubmit}>
