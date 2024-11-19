@@ -1,87 +1,170 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const ChecklistForm = () => {
+const ChecklistForm = ({ checklistId, onReturnHome }) => {
     const [formData, setFormData] = useState({
         cliente: '',
         consultorio: '',
         processador: false,
-        memoria_ram: false,
+        memoriaRAM: false,
         armazenamento: false,
-        sistema_operacional: false,
+        sistemaOperacional: false,
         monitor: false,
         webcam: false,
         microfone: false,
-        alto_falantes: false,
-        conexao_internet: false,
+        altoFalantes: false,
+        conexaoInternet: false,
         navegador: false,
     });
 
     const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData({
-            ...formData,
+        const { name, type, checked, value } = e.target;
+        setFormData((prevData) => ({
+            ...prevData,
             [name]: type === 'checkbox' ? checked : value,
-        });
+        }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Determinar status do checklist
+        const allChecked = Object.keys(formData).every(
+            (key) =>
+                key === 'cliente' ||
+                key === 'consultorio' ||
+                (typeof formData[key] === 'boolean' && formData[key])
+        );
+
+        const status = allChecked ? 'APTO' : 'NÃO APTO';
+
         try {
-            const response = await axios.post('http://localhost:8000/api/checklists/', formData);
+            const response = await axios.post('http://localhost:8000/api/checklists/', {
+                ...formData,
+                status,
+            });
+
             alert('Checklist submetido com sucesso!');
+            console.log(response.data);
+
+            onReturnHome();
         } catch (error) {
             console.error('Erro ao submeter o checklist:', error);
+            alert('Ocorreu um erro ao submeter o checklist.');
         }
     };
 
     return (
         <form onSubmit={handleSubmit}>
-            <label>Cliente:</label>
-            <input type="text" name="cliente" value={formData.cliente} onChange={handleChange} required />
-
-            <label>Consultório:</label>
-            <input type="text" name="consultorio" value={formData.consultorio} onChange={handleChange} required />
-
             <div>
-                <label>Processador:</label>
-                <input type="checkbox" name="processador" checked={formData.processador} onChange={handleChange} />
+                <label>Cliente:</label>
+                <input
+                    type="text"
+                    name="cliente"
+                    value={formData.cliente}
+                    onChange={handleChange}
+                    required
+                />
             </div>
             <div>
-                <label>Memória RAM:</label>
-                <input type="checkbox" name="memoria_ram" checked={formData.memoria_ram} onChange={handleChange} />
+                <label>Consultório:</label>
+                <input
+                    type="text"
+                    name="consultorio"
+                    value={formData.consultorio}
+                    onChange={handleChange}
+                    required
+                />
             </div>
             <div>
-                <label>Armazenamento:</label>
-                <input type="checkbox" name="armazenamento" checked={formData.armazenamento} onChange={handleChange} />
+                <label>Processador Intel Core i3 ou Ryzen 3:</label>
+                <input
+                    type="checkbox"
+                    name="processador"
+                    checked={formData.processador}
+                    onChange={handleChange}
+                />
             </div>
             <div>
-                <label>Sistema Operacional:</label>
-                <input type="checkbox" name="sistema_operacional" checked={formData.sistema_operacional} onChange={handleChange} />
+                <label>Memória RAM 4 GB (mínimo):</label>
+                <input
+                    type="checkbox"
+                    name="memoriaRAM"
+                    checked={formData.memoriaRAM}
+                    onChange={handleChange}
+                />
+            </div>
+            <div>
+                <label>Armazenamento 100GB (mínimo):</label>
+                <input
+                    type="checkbox"
+                    name="armazenamento"
+                    checked={formData.armazenamento}
+                    onChange={handleChange}
+                />
+            </div>
+            <div>
+                <label>Sistema Operacional Windows 10:</label>
+                <input
+                    type="checkbox"
+                    name="sistemaOperacional"
+                    checked={formData.sistemaOperacional}
+                    onChange={handleChange}
+                />
             </div>
             <div>
                 <label>Monitor:</label>
-                <input type="checkbox" name="monitor" checked={formData.monitor} onChange={handleChange} />
+                <input
+                    type="checkbox"
+                    name="monitor"
+                    checked={formData.monitor}
+                    onChange={handleChange}
+                />
             </div>
             <div>
-                <label>Webcam:</label>
-                <input type="checkbox" name="webcam" checked={formData.webcam} onChange={handleChange} />
+                <label>WebCam:</label>
+                <input
+                    type="checkbox"
+                    name="webcam"
+                    checked={formData.webcam}
+                    onChange={handleChange}
+                />
             </div>
             <div>
                 <label>Microfone:</label>
-                <input type="checkbox" name="microfone" checked={formData.microfone} onChange={handleChange} />
+                <input
+                    type="checkbox"
+                    name="microfone"
+                    checked={formData.microfone}
+                    onChange={handleChange}
+                />
             </div>
             <div>
-                <label>Alto-falantes:</label>
-                <input type="checkbox" name="alto_falantes" checked={formData.alto_falantes} onChange={handleChange} />
+                <label>Alto-Falantes:</label>
+                <input
+                    type="checkbox"
+                    name="altoFalantes"
+                    checked={formData.altoFalantes}
+                    onChange={handleChange}
+                />
             </div>
             <div>
-                <label>Conexão de Internet:</label>
-                <input type="checkbox" name="conexao_internet" checked={formData.conexao_internet} onChange={handleChange} />
+                <label>Conexão de Internet 10 Mbps:</label>
+                <input
+                    type="checkbox"
+                    name="conexaoInternet"
+                    checked={formData.conexaoInternet}
+                    onChange={handleChange}
+                />
             </div>
             <div>
                 <label>Navegador Chrome:</label>
-                <input type="checkbox" name="navegador" checked={formData.navegador} onChange={handleChange} />
+                <input
+                    type="checkbox"
+                    name="navegador"
+                    checked={formData.navegador}
+                    onChange={handleChange}
+                />
             </div>
             <button type="submit">Submeter</button>
         </form>
