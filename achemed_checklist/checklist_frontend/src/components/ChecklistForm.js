@@ -1,175 +1,151 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const ChecklistForm = ({ checklistId, onReturnHome }) => {
     const [formData, setFormData] = useState({
-        cliente: '',
-        consultorio: '',
+        cliente: "",
+        consultorio: "",
         processador: false,
-        memoriaRAM: false,
+        ram: false,
         armazenamento: false,
-        sistemaOperacional: false,
+        sistema: false,
         monitor: false,
         webcam: false,
         microfone: false,
-        altoFalantes: false,
-        conexaoInternet: false,
+        autoFalantes: false,
+        internet: false,
         navegador: false,
     });
 
-    const handleChange = (e) => {
+    const [showModal, setShowModal] = useState(checklistId === null);
+
+    // Carregar checklist para edição, caso haja um ID
+    useEffect(() => {
+        if (checklistId) {
+            axios
+                .get(`http://localhost:8000/api/checklists/${checklistId}/`)
+                .then((response) => {
+                    // Corrigir valores para garantir consistência
+                    const checklistData = response.data;
+                    setFormData({
+                        cliente: checklistData.cliente || "",
+                        consultorio: checklistData.consultorio || "",
+                        processador: !!checklistData.processador,
+                        ram: !!checklistData.ram,
+                        armazenamento: !!checklistData.armazenamento,
+                        sistema: !!checklistData.sistema,
+                        monitor: !!checklistData.monitor,
+                        webcam: !!checklistData.webcam,
+                        microfone: !!checklistData.microfone,
+                        autoFalantes: !!checklistData.autoFalantes,
+                        internet: !!checklistData.internet,
+                        navegador: !!checklistData.navegador,
+                    });
+                    setShowModal(false);
+                })
+                .catch((error) => console.error("Erro ao carregar checklist:", error));
+        }
+    }, [checklistId]);
+
+    const handleInputChange = (e) => {
         const { name, type, checked, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: type === 'checkbox' ? checked : value,
+        setFormData((prev) => ({
+            ...prev,
+            [name]: type === "checkbox" ? checked : value,
         }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
-        const allChecked = Object.keys(formData).every(
-            (key) =>
-                key === 'cliente' ||
-                key === 'consultorio' ||
-                (typeof formData[key] === 'boolean' && formData[key])
-        );
-    
-        const status = allChecked ? 'APTO' : 'NÃO APTO';
-    
+
+        // Verificar se todos os campos estão preenchidos (exceto cliente e consultório)
+        const isApto = Object.values(formData)
+            .slice(2) // Ignorar "cliente" e "consultorio"
+            .every((value) => value);
+
         try {
-            const response = await axios.post('http://localhost:8000/api/checklists/', {
-                ...formData,
-                status,
-            });
-            alert('Checklist submetido com sucesso!');
-            console.log('Resposta do servidor:', response.data);
-            onReturnHome();
-        } catch (error) {
-            console.error('Erro ao submeter o checklist:', error);
-            if (error.response) {
-                console.error('Erro do backend:', error.response.data);
-                alert(`Erro ao submeter: ${JSON.stringify(error.response.data)}`);
+            if (checklistId) {
+                // Atualizar checklist existente
+                await axios.put(`http://localhost:8000/api/checklists/${checklistId}/`, {
+                    ...formData,
+                    status: isApto ? "APTO" : "NÃO APTO",
+                });
             } else {
-                alert('Erro ao submeter. Verifique a conexão com o backend.');
+                // Criar novo checklist
+                await axios.post("http://localhost:8000/api/checklists/", {
+                    ...formData,
+                    status: isApto ? "APTO" : "NÃO APTO",
+                });
             }
+
+            alert("Checklist salvo com sucesso!");
+            onReturnHome(checklistId, isApto ? "APTO" : "NÃO APTO");
+        } catch (error) {
+            console.error("Erro ao salvar o checklist:", error);
+            alert("Erro ao salvar o checklist.");
         }
-    };    
+    };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div>
-                <label>Cliente:</label>
-                <input
-                    type="text"
-                    name="cliente"
-                    value={formData.cliente}
-                    onChange={handleChange}
-                    required
-                />
-            </div>
-            <div>
-                <label>Consultório:</label>
-                <input
-                    type="text"
-                    name="consultorio"
-                    value={formData.consultorio}
-                    onChange={handleChange}
-                    required
-                />
-            </div>
-            <div>
-                <label>Processador Intel Core i3 ou Ryzen 3:</label>
-                <input
-                    type="checkbox"
-                    name="processador"
-                    checked={formData.processador}
-                    onChange={handleChange}
-                />
-            </div>
-            <div>
-                <label>Memória RAM 4 GB (mínimo):</label>
-                <input
-                    type="checkbox"
-                    name="memoriaRAM"
-                    checked={formData.memoriaRAM}
-                    onChange={handleChange}
-                />
-            </div>
-            <div>
-                <label>Armazenamento 100GB (mínimo):</label>
-                <input
-                    type="checkbox"
-                    name="armazenamento"
-                    checked={formData.armazenamento}
-                    onChange={handleChange}
-                />
-            </div>
-            <div>
-                <label>Sistema Operacional Windows 10:</label>
-                <input
-                    type="checkbox"
-                    name="sistemaOperacional"
-                    checked={formData.sistemaOperacional}
-                    onChange={handleChange}
-                />
-            </div>
-            <div>
-                <label>Monitor:</label>
-                <input
-                    type="checkbox"
-                    name="monitor"
-                    checked={formData.monitor}
-                    onChange={handleChange}
-                />
-            </div>
-            <div>
-                <label>WebCam:</label>
-                <input
-                    type="checkbox"
-                    name="webcam"
-                    checked={formData.webcam}
-                    onChange={handleChange}
-                />
-            </div>
-            <div>
-                <label>Microfone:</label>
-                <input
-                    type="checkbox"
-                    name="microfone"
-                    checked={formData.microfone}
-                    onChange={handleChange}
-                />
-            </div>
-            <div>
-                <label>Alto-Falantes:</label>
-                <input
-                    type="checkbox"
-                    name="altoFalantes"
-                    checked={formData.altoFalantes}
-                    onChange={handleChange}
-                />
-            </div>
-            <div>
-                <label>Conexão de Internet 10 Mbps:</label>
-                <input
-                    type="checkbox"
-                    name="conexaoInternet"
-                    checked={formData.conexaoInternet}
-                    onChange={handleChange}
-                />
-            </div>
-            <div>
-                <label>Navegador Chrome:</label>
-                <input
-                    type="checkbox"
-                    name="navegador"
-                    checked={formData.navegador}
-                    onChange={handleChange}
-                />
-            </div>
-            <button type="submit">Submeter</button>
-        </form>
+        <div>
+            {showModal && (
+                <div className="modal">
+                    <h2>Informações Iniciais</h2>
+                    <label>
+                        Cliente:
+                        <input
+                            type="text"
+                            name="cliente"
+                            value={formData.cliente}
+                            onChange={handleInputChange}
+                            disabled={checklistId !== null}
+                        />
+                    </label>
+                    <label>
+                        Consultório:
+                        <input
+                            type="text"
+                            name="consultorio"
+                            value={formData.consultorio}
+                            onChange={handleInputChange}
+                            disabled={checklistId !== null}
+                        />
+                    </label>
+                    <button onClick={() => setShowModal(false)}>Continuar</button>
+                </div>
+            )}
+
+            {!showModal && (
+                <form onSubmit={handleSubmit}>
+                    <h2>Checklist</h2>
+                    {[
+                        "processador",
+                        "ram",
+                        "armazenamento",
+                        "sistema",
+                        "monitor",
+                        "webcam",
+                        "microfone",
+                        "autoFalantes",
+                        "internet",
+                        "navegador",
+                    ].map((item) => (
+                        <div key={item}>
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name={item}
+                                    checked={formData[item] || false}
+                                    onChange={handleInputChange}
+                                />
+                                {item.charAt(0).toUpperCase() + item.slice(1)}
+                            </label>
+                        </div>
+                    ))}
+                    <button type="submit">Submeter</button>
+                </form>
+            )}
+        </div>
     );
 };
 

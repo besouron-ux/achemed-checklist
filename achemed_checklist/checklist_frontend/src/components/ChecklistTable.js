@@ -1,92 +1,60 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const ChecklistTable = ({ onReopenChecklist }) => {
-    const [checklistsAptos, setChecklistsAptos] = useState([]);
-    const [checklistsNaoAptos, setChecklistsNaoAptos] = useState([]);
-    const [loading, setLoading] = useState(true);
+const ChecklistTable = ({ setChecklistId, setCurrentView }) => {
+    const [checklists, setChecklists] = useState([]);
+
+    const fetchChecklists = () => {
+        axios.get("http://localhost:8000/api/checklists/").then((response) => {
+            setChecklists(response.data);
+        });
+    };
 
     useEffect(() => {
-        const fetchChecklists = async () => {
-            try {
-                const response = await axios.get('http://localhost:8000/api/checklists/');
-                const data = response.data;
-
-                // Separar os checklists em APTOs e NÃO APTOs
-                const aptos = data.filter(item => item.status === 'APTO');
-                const naoAptos = data.filter(item => item.status === 'NÃO APTO');
-
-                setChecklistsAptos(aptos);
-                setChecklistsNaoAptos(naoAptos);
-                setLoading(false);
-            } catch (error) {
-                console.error('Erro ao buscar os checklists:', error);
-                setLoading(false);
-            }
-        };
-
         fetchChecklists();
     }, []);
 
-    if (loading) {
-        return <p>Carregando tabelas...</p>;
-    }
+    const handleReabrir = (checklist) => {
+        setChecklistId(checklist.id);
+        setCurrentView("checklist");
+    };
 
-    if (checklistsAptos.length === 0 && checklistsNaoAptos.length === 0) {
-        return <p>Nenhuma tabela disponível.</p>;
-    }
+    const handleUpdateChecklist = (checklistId, status) => {
+        setChecklists((prevChecklists) =>
+            prevChecklists.map((checklist) =>
+                checklist.id === checklistId ? { ...checklist, status } : checklist
+            )
+        );
+    };
 
     return (
         <div>
-            <h2>Tabelas de Checklists</h2>
+            <h2>APTOs</h2>
+            <table>
+                {checklists
+                    .filter((item) => item.status === "APTO")
+                    .map((checklist) => (
+                        <tr key={checklist.id}>
+                            <td>{checklist.cliente}</td>
+                            <td>{checklist.consultorio}</td>
+                        </tr>
+                    ))}
+            </table>
 
-            {checklistsAptos.length > 0 && (
-                <div>
-                    <h3>Checklists APTOs</h3>
-                    <table border="1">
-                        <thead>
-                            <tr>
-                                <th>Cliente</th>
-                                <th>Consultório</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {checklistsAptos.map((item) => (
-                                <tr key={item.id}>
-                                    <td>{item.cliente}</td>
-                                    <td>{item.consultorio}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
-            {checklistsNaoAptos.length > 0 && (
-                <div>
-                    <h3>Checklists NÃO APTOs</h3>
-                    <table border="1">
-                        <thead>
-                            <tr>
-                                <th>Cliente</th>
-                                <th>Consultório</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {checklistsNaoAptos.map((item) => (
-                                <tr key={item.id}>
-                                    <td>{item.cliente}</td>
-                                    <td>{item.consultorio}</td>
-                                    <td>
-                                        <button onClick={() => onReopenChecklist(item.id)}>Reabrir</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+            <h2>NÃO APTOS</h2>
+            <table>
+                {checklists
+                    .filter((item) => item.status === "NÃO APTO")
+                    .map((checklist) => (
+                        <tr key={checklist.id}>
+                            <td>{checklist.cliente}</td>
+                            <td>{checklist.consultorio}</td>
+                            <td>
+                                <button onClick={() => handleReabrir(checklist)}>Reabrir</button>
+                            </td>
+                        </tr>
+                    ))}
+            </table>
         </div>
     );
 };
