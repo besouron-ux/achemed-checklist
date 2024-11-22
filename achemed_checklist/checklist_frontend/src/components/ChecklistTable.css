@@ -1,0 +1,80 @@
+.table-container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 20px auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  
+  h2 {
+    text-align: center;
+    color: #00468b;
+    margin-bottom: 20px;
+  }
+  
+  .styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 1rem;
+    text-align: left;
+  }
+  
+  .styled-table thead tr {
+    background-color: #00468b;
+    color: white;
+    text-align: left;
+    font-weight: bold;
+  }
+  
+  .styled-table th,
+  .styled-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+  }
+  
+  .styled-table tbody tr {
+    background-color: #f9f9f9;
+  }
+  
+  .styled-table tbody tr:nth-of-type(even) {
+    background-color: #f1f1f1;
+  }
+  
+  .styled-table tbody tr:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .styled-table tbody td {
+    text-align: center;
+  }
+  
+  button {
+    background-color: #00468b;
+    color: white;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  button:hover {
+    background-color: #002e5b;
+  }
+  
+  /* Responsividade */
+  @media (max-width: 768px) {
+    .styled-table {
+      font-size: 0.9rem;
+    }
+  
+    button {
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+  }
+  

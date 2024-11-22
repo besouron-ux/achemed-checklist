@@ -5,8 +5,16 @@ from .serializers import ChecklistSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import api_view
 
 
+@api_view(['DELETE'])
+def clear_aptos(request):
+    ids = request.data.get('ids', [])
+    if ids:
+        Checklist.objects.filter(id__in=ids, status="APTO").delete()
+        return Response({"message": "Checklists aptos limpos com sucesso!"}, status=200)
+    return Response({"error": "Nenhum ID fornecido."}, status=400)
 
 class ChecklistViewSet(viewsets.ModelViewSet):
     queryset = Checklist.objects.all()
