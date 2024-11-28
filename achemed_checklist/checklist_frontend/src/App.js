@@ -4,6 +4,7 @@ import ChecklistTable from "./components/ChecklistTable.js";
 import axios from "axios";
 import "./App.css";
 import logo from "./assets/logo.png"; // Importando a logo
+import ClientesPage from "./components/ClientesPage";
 
 function App() {
   const [view, setView] = useState("home");
@@ -17,13 +18,16 @@ function App() {
         .get(`http://localhost:8000/api/checklists/${editingChecklistId}`)
         .then((response) => {
           setChecklistData(response.data);
-        });
+        })
+        .catch((error) => console.error("Erro ao carregar checklist:", error));
     }
   }, [editingChecklistId]);
 
-  const handleReopenChecklist = (id) => {
-    setEditingChecklistId(id);
-    setView("checklist");
+  const handleNavigate = (targetView) => {
+    setView(targetView);
+    if (targetView === "home") {
+      setEditingChecklistId(null);
+    }
   };
 
   return (
@@ -31,17 +35,23 @@ function App() {
       {/* Header com a logo e o título "Checklist" */}
       <header className="App-header">
         <img src={logo} alt="Logo Achemed" className="App-logo" />
-        <h1>Checklist</h1>
+        <h1>Checklist Técnico</h1>
       </header>
 
       <main className="App-content">
         {view === "home" && (
           <div className="App-buttons">
-            <button className="App-button" onClick={() => setView("checklist")}>
+            <button
+              className="App-button"
+              onClick={() => handleNavigate("checklist")}
+            >
               Acessar Checklist
             </button>
-            <button className="App-button" onClick={() => setView("tabela")}>
-              Ver Checklists Antigos
+            <button
+              className="App-button"
+              onClick={() => handleNavigate("clientes")}
+            >
+              Clientes
             </button>
           </div>
         )}
@@ -50,39 +60,38 @@ function App() {
           <div>
             <button
               className="App-button"
-              onClick={() => {
-                setView("home");
-                setEditingChecklistId(null);
-              }}
+              onClick={() => handleNavigate("home")}
             >
               Voltar
             </button>
             <ChecklistForm
               checklistId={editingChecklistId}
               checklistData={checklistData}
-              onReturnHome={() => {
-                setView("home");
-                setEditingChecklistId(null);
-              }}
+              onReturnHome={() => handleNavigate("home")}
             />
           </div>
         )}
 
-        {view === "tabela" && (
+        {view === "clientes" && (
           <div>
-            <button className="App-button" onClick={() => setView("home")}>
+            <button
+              className="App-button"
+              onClick={() => handleNavigate("home")}
+            >
               Voltar
             </button>
-            <ChecklistTable
-              setChecklistId={setEditingChecklistId}
-              setCurrentView={setView}
+            <ClientesPage
+              onClientSelected={(clientId) => {
+                setEditingChecklistId(clientId); // Associa o cliente ao checklist
+                handleNavigate("checklist");
+              }}
             />
           </div>
         )}
       </main>
 
       <footer className="App-footer">
-        <p>© 2024 Achemed Saúde. Todos os direitos reservados.</p>
+        <p>© 2024 Achemed. Todos os direitos reservados.</p>
       </footer>
     </div>
   );

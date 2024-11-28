@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Checklist
+from .models import Cliente, Consultorio
 
 class ChecklistSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,3 +24,15 @@ class ChecklistSerializer(serializers.ModelSerializer):
         ]:
             representation[field] = representation[field] or False
         return representation
+
+class ConsultorioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Consultorio
+        fields = "__all__"
+
+class ClienteSerializer(serializers.ModelSerializer):
+    consultorios = ConsultorioSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Cliente
+        fields = "__all__"

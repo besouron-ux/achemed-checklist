@@ -17,7 +17,30 @@ const ChecklistForm = ({ checklistId, onReturnHome }) => {
         navegador: false,
     });
 
+    const [clientes, setClientes] = useState([]); // Lista de clientes
+    const [consultorios, setConsultorios] = useState([]); // Lista de consultórios
     const [showModal, setShowModal] = useState(checklistId === null);
+
+    // Carregar lista de clientes ao carregar o componente
+    useEffect(() => {
+        axios.get("http://localhost:8000/api/clientes/").then((response) => {
+            setClientes(response.data); // Atualiza a lista de clientes
+        }).catch((error) => console.error("Erro ao carregar clientes:", error));
+    }, []);
+
+    // Carregar lista de consultórios ao selecionar um cliente
+    useEffect(() => {
+        if (formData.cliente) {
+            axios
+                .get(`http://localhost:8000/api/clientes/${formData.cliente}/consultorios/`)
+                .then((response) => {
+                    setConsultorios(response.data); // Atualiza a lista de consultórios
+                })
+                .catch((error) => console.error("Erro ao carregar consultórios:", error));
+        } else {
+            setConsultorios([]); // Limpa os consultórios se nenhum cliente for selecionado
+        }
+    }, [formData.cliente]);
 
     // Carregar checklist para edição, caso haja um ID
     useEffect(() => {
@@ -25,7 +48,6 @@ const ChecklistForm = ({ checklistId, onReturnHome }) => {
             axios
                 .get(`http://localhost:8000/api/checklists/${checklistId}/`)
                 .then((response) => {
-                    // Corrigir valores para garantir consistência
                     const checklistData = response.data;
                     setFormData({
                         cliente: checklistData.cliente || "",
@@ -58,20 +80,17 @@ const ChecklistForm = ({ checklistId, onReturnHome }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Verificar se todos os campos estão preenchidos (exceto cliente e consultório)
         const isApto = Object.values(formData)
-            .slice(2) // Ignorar "cliente" e "consultorio"
+            .slice(2)
             .every((value) => value);
 
         try {
             if (checklistId) {
-                // Atualizar checklist existente
                 await axios.put(`http://localhost:8000/api/checklists/${checklistId}/`, {
                     ...formData,
                     status: isApto ? "APTO" : "NÃO APTO",
                 });
             } else {
-                // Criar novo checklist
                 await axios.post("http://localhost:8000/api/checklists/", {
                     ...formData,
                     status: isApto ? "APTO" : "NÃO APTO",
@@ -91,26 +110,45 @@ const ChecklistForm = ({ checklistId, onReturnHome }) => {
             {showModal && (
                 <div className="modal">
                     <h2>Informações Iniciais</h2>
+
+                    {/* Select Box para Clientes */}
                     <label>
                         Cliente:
-                        <input
-                            type="text"
+                        <select
                             name="cliente"
                             value={formData.cliente}
                             onChange={handleInputChange}
                             disabled={checklistId !== null}
-                        />
+                        >
+                            <option value="">-- Selecione um Cliente --</option>
+                            {clientes.map((cliente) => (
+                                <option key={cliente.id} value={cliente.id}>
+                                    {cliente.nome}
+                                </option>
+                            ))}
+                        </select>
                     </label>
-                    <label>
-                        Consultório:
-                        <input
-                            type="text"
-                            name="consultorio"
-                            value={formData.consultorio}
-                            onChange={handleInputChange}
-                            disabled={checklistId !== null}
-                        />
-                    </label>
+
+                    {/* Select Box para Consultórios */}
+                    {formData.cliente && (
+                        <label>
+                            Consultório:
+                            <select
+                                name="consultorio"
+                                value={formData.consultorio}
+                                onChange={handleInputChange}
+                                disabled={checklistId !== null}
+                            >
+                                <option value="">-- Selecione um Consultório --</option>
+                                {consultorios.map((consultorio) => (
+                                    <option key={consultorio.id} value={consultorio.id}>
+                                        {consultorio.nome}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    )}
+
                     <button onClick={() => setShowModal(false)}>Continuar</button>
                 </div>
             )}
@@ -118,7 +156,7 @@ const ChecklistForm = ({ checklistId, onReturnHome }) => {
             {!showModal && (
                 <form onSubmit={handleSubmit}>
                     <h2>Checklist</h2>
-                    {[
+                    {[ 
                         "processador",
                         "ram",
                         "armazenamento",

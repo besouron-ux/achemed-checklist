@@ -138,9 +138,9 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   }
 }
 
-/* Estilo do header com logo */
+/* Estilo do header*/
 .App-header {
-  background-color: #00468b; /* Azul escuro */
+  background-color: #00468b; 
   color: white;
   display: flex;
   align-items: center;
@@ -151,7 +151,7 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
 
 .App-logo {
   height: 90px;
-  width: auto; /* Mantém a proporção da imagem */
+  width: auto; 
 }
 
 .App-header h1 {
@@ -159,7 +159,7 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   font-size: 1.8rem;
 }
 
-/* Responsividade para telas menores */
+/* Responsividade */
 @media (max-width: 600px) {
   .App-header {
     flex-direction: row;

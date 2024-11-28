@@ -20,6 +20,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from checklist.views import ChecklistViewSet
 
+
 router = DefaultRouter()
 router.register("checklists", ChecklistViewSet)
 
@@ -27,6 +28,7 @@ def home(request):
     return HttpResponse("Bem-vindo à API do Achemed Checklist!")
 
 urlpatterns = [
+    path('api/checklist/', include('checklist.urls')),
     path('', home),  # Página inicial
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),  # Rotas da API
